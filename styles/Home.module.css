@@ -138,3 +138,12 @@
     border-radius: 20px;
     cursor: pointer;
 }
+
+.signButton {
+    margin: auto;
+    width: 65px;
+    height: 35px;
+    white-space: nowrap;
+    border-radius: 20px;
+    cursor: pointer;
+}

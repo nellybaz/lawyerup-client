@@ -2,6 +2,7 @@ import styles from "../styles/Home.module.css";
 import React, { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import axios from "axios";
+import SignatureCanvas from "react-signature-canvas";
 
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
@@ -13,7 +14,8 @@ export default function sign() {
   const [clickPoint, setClickPoint] = useState({ x: 50, y: 600 });
   const [showInput, setShowInput] = useState(false);
   const [paintText, setPainText] = useState("");
-  const [currentPage, setCurrentPage] = useState(1)
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isSigning, setIsSigning] = useState(false);
 
   const [pdfBuffer, setPdfBuffer] = useState<ArrayBuffer>(new ArrayBuffer(0));
 
@@ -86,6 +88,10 @@ export default function sign() {
     setCurrentPage(currentPage + 1);
 }
 
+const toggleSignBox = () =>  {
+  setIsSigning(true);
+}
+
   return (
     <div className={styles.container}>
     <div
@@ -101,9 +107,12 @@ export default function sign() {
         onClick={handleNext}>Next</button></div>
 
       <div
-        style={{ border: "1px solid grey", padding: "0" }}
+        style={{ border: "1px solid grey", padding: "0", }}
         onClick={mouseMoveHandler}
       >
+        
+  {isSigning ? <SignatureCanvas penColor='green'
+    canvasProps={{width: 500, height: 200, className: 'sigCanvas'}} />: console.log("Not signing")}
         <PdfViewer
           url={pdfData}
           pageNumber={currentPage}
@@ -111,6 +120,10 @@ export default function sign() {
           ref={pdfViewerRef}
         />
       </div>
+      <button 
+        className={styles.signButton}
+        onClick={toggleSignBox}
+        >Sign</button>
 
       {showInput && (
         <InputField
