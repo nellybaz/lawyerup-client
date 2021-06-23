@@ -88,10 +88,17 @@ export default function sign() {
 
   return (
     <div className={styles.container}>
-    <div>
-      <button onClick={handlePrev}>Prev</button>
+    <div
+      style={{
+        display: "flex",
+      }}> 
+      <button 
+        className={styles.prevButton} 
+        onClick={handlePrev}>Prev</button>
       <h1>Editing Startup NDA</h1>
-      <button onClick={handleNext}>Next</button></div>
+      <button
+        className={styles.nextButton} 
+        onClick={handleNext}>Next</button></div>
 
       <div
         style={{ border: "1px solid grey", padding: "0" }}
