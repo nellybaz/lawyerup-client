@@ -80,9 +80,18 @@ export default function sign() {
     setShowInput(true);
   };
 
+  const handlePrev = () => currentPage > 1 ? setCurrentPage(currentPage - 1) : console.log("start of doc");
+
+  const handleNext = () =>  {
+    setCurrentPage(currentPage + 1);
+}
+
   return (
     <div className={styles.container}>
+    <div>
+      <button onClick={handlePrev}>Prev</button>
       <h1>Editing Startup NDA</h1>
+      <button onClick={handleNext}>Next</button></div>
 
       <div
         style={{ border: "1px solid grey", padding: "0" }}
