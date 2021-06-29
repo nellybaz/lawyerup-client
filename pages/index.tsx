@@ -58,7 +58,7 @@ export default function Home() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Made with ❤️ {' '}
+          Made with ❤️
           <span className={styles.logo}>
             LaywerUp
           </span>

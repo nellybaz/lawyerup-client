@@ -2,7 +2,7 @@ import styles from "../styles/Home.module.css";
 import React, { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import axios from "axios";
-import SignatureCanvas from "react-signature-canvas";
+// import SignatureCanvas from "react-signature-canvas";
 
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
@@ -15,6 +15,7 @@ export default function sign() {
   const [showInput, setShowInput] = useState(false);
   const [paintText, setPainText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
   const [isSigning, setIsSigning] = useState(false);
 
   const [pdfBuffer, setPdfBuffer] = useState<ArrayBuffer>(new ArrayBuffer(0));
@@ -37,6 +38,8 @@ export default function sign() {
     const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
 
     const page = pdfDoc.getPages()[currentPage-1];
+
+    setTotalPages(pdfDoc.getPages().length);
 
     const { width, height } = page.getSize();
     setPdfSize({ width, height });
@@ -82,11 +85,12 @@ export default function sign() {
     setShowInput(true);
   };
 
-  const handlePrev = () => currentPage > 1 ? setCurrentPage(currentPage - 1) : console.log("start of doc");
+  const handlePrev = () => currentPage > 1 ? setCurrentPage(currentPage - 1) : alert("Start of document");
+  const handleNext = () => currentPage <= totalPages ? setCurrentPage(currentPage + 1) : alert("End of document");
 
-  const handleNext = () =>  {
-    setCurrentPage(currentPage + 1);
-}
+//   const handleNext = () =>  {
+//     setCurrentPage(currentPage + 1);
+// }
 
 const toggleSignBox = () =>  {
   setIsSigning(true);
@@ -111,8 +115,8 @@ const toggleSignBox = () =>  {
         onClick={mouseMoveHandler}
       >
         
-  {isSigning ? <SignatureCanvas penColor='green'
-    canvasProps={{width: 500, height: 200, className: 'sigCanvas'}} />: console.log("Not signing")}
+  {/* {isSigning ? <SignatureCanvas penColor='green'
+    canvasProps={{width: 500, height: 200, className: 'sigCanvas'}} />: console.log("Not signing")} */}
         <PdfViewer
           url={pdfData}
           pageNumber={currentPage}

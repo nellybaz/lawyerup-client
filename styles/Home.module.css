@@ -122,28 +122,55 @@
 .prevButton {
     margin-right: 20px;
     margin-top: 30px;
-    width: 65px;
-    height: 35px;
+    width: 95px;
+    height: 40px;
     white-space: nowrap;
     border-radius: 20px;
     cursor: pointer;
+    color: #0070f3;
+    background-color: #ffff;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.prevButton:hover {
+    background-color: #0070f3;
+    color: #ffff;
 }
 
 .nextButton {
     margin-left: 20px;
     margin-top: 30px;
-    width: 65px;
-    height: 35px;
+    width: 95px;
+    height: 40px;
     white-space: nowrap;
     border-radius: 20px;
     cursor: pointer;
+    color: #0070f3;
+    background-color: #ffff;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.nextButton:hover {
+    background-color: #0070f3;
+    color: #ffff;
 }
 
 .signButton {
     margin: auto;
-    width: 65px;
-    height: 35px;
+    width: 180px;
+    height: 45px;
     white-space: nowrap;
     border-radius: 20px;
     cursor: pointer;
+    color: #0070f3;
+    background-color: #ffff;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.signButton:hover {
+    background-color: #0070f3;
+    color: #ffff;
 }
