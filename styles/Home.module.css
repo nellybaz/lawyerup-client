@@ -178,3 +178,10 @@
     width: 25%;
     border-radius: 8px;
 }
+
+.sigCanvas2 {
+    border: 2px solid rgb(34, 31, 31);
+    min-height: 40vh;
+    width: 30vw;
+    border-radius: 8px;
+}
