@@ -127,15 +127,14 @@
     white-space: nowrap;
     border-radius: 20px;
     cursor: pointer;
-    color: #0070f3;
     background-color: #ffff;
     font-size: 16px;
     font-weight: bold;
 }
 
 .prevButton:hover {
-    background-color: #0070f3;
-    color: #ffff;
+    border: 2px solid #0070f3;
+    color: #0070f3;
 }
 
 .nextButton {
@@ -146,15 +145,14 @@
     white-space: nowrap;
     border-radius: 20px;
     cursor: pointer;
-    color: #0070f3;
     background-color: #ffff;
     font-size: 16px;
     font-weight: bold;
 }
 
 .nextButton:hover {
-    background-color: #0070f3;
-    color: #ffff;
+    border: 2px solid #0070f3;
+    color: #0070f3;
 }
 
 .signButton {
@@ -164,13 +162,18 @@
     white-space: nowrap;
     border-radius: 20px;
     cursor: pointer;
-    color: #0070f3;
     background-color: #ffff;
     font-size: 22px;
     font-weight: bold;
 }
 
 .signButton:hover {
-    background-color: #0070f3;
-    color: #ffff;
+    border: 2px solid #0070f3;
+    color: #0070f3;
+}
+
+.sigCanvas {
+    border: 2px solid rgb(34, 31, 31);
+    min-height: 500px;
+    width: 80%;
 }
