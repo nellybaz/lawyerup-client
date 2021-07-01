@@ -122,13 +122,12 @@ const toggleSignBox = () =>  {
         className={styles.signButton}
         onClick={toggleSignBox}
         >Sign</button>
-      
       {isSigning && ( 
-        <div className = 'sigCanvas'><SignaturePad penColor='black'
+        <div className = {styles.sigCanvas}><SignaturePad penColor='black'
         />
         </div>
       )}
-
+      
       {showInput && (
         <InputField
           onClick={(e: string) => {
@@ -164,6 +163,7 @@ function InputField(props: any) {
         placeholder="Enter text to paint"
       />
       <button onClick={() => props.onClick(value)}>Okay</button>
+      <button>Sign</button>
     </div>
   );
 }
