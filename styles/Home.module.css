@@ -119,3 +119,72 @@
     flex-direction: column;
   }
 }
+
+.prevButton {
+  margin-right: 20px;
+  margin-top: 30px;
+  width: 95px;
+  height: 40px;
+  white-space: nowrap;
+  border-radius: 20px;
+  cursor: pointer;
+  background-color: #ffff;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.prevButton:hover {
+  border: 2px solid #0070f3;
+  color: #0070f3;
+}
+
+.button {
+  margin-left: 20px;
+  margin-top: 30px;
+  width: 95px;
+  height: 40px;
+  white-space: nowrap;
+  border-radius: 5px;
+  border: 2px solid #0070f3;
+  cursor: pointer;
+  background-color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.button:hover {
+  /* border: 2px solid #0070f3; */
+  background-color: #0070f3;
+  color: #fff;
+}
+
+.signButton {
+  margin: auto;
+  width: 180px;
+  height: 45px;
+  white-space: nowrap;
+  border-radius: 20px;
+  cursor: pointer;
+  background-color: #ffff;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.signButton:hover {
+  border: 2px solid #0070f3;
+  color: #0070f3;
+}
+
+.sigCanvas {
+  border: 2px solid rgb(34, 31, 31);
+  min-height: 300px;
+  width: 25%;
+  border-radius: 8px;
+}
+
+.sigCanvas2 {
+  border: 2px solid rgb(34, 31, 31);
+  min-height: 200px;
+  width: 200px;
+  border-radius: 8px;
+}
