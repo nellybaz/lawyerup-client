@@ -27,7 +27,7 @@ export default function Home() {
             <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry </p>
           </a>
 
-          <a href="#" className={styles.card}>
+          {/* <a href="#" className={styles.card}>
             <h2>Agreement of Service &rarr;</h2>
             <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry</p>
           </a>
@@ -48,7 +48,7 @@ export default function Home() {
             <p>
             Lorem Ipsum is simply dummy text of the printing and typesetting industry
             </p>
-          </a>
+          </a> */}
         </div>
       </main>
 
@@ -58,10 +58,7 @@ export default function Home() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Made with ❤️
-          <span className={styles.logo}>
-            LaywerUp
-          </span>
+          All rights reserved. &copy; LayweredUp
         </a>
       </footer>
     </div>
