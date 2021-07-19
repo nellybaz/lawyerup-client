@@ -2,7 +2,9 @@ import styles from "../styles/Home.module.css";
 import React, { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import axios from "axios";
-import SignaturePad from "react-signature-canvas";
+import SigningCanvas from "../components/signingCanvas";
+import EditField from "../components/editField";
+import EmailCard from "../components/emailCard";
 
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
@@ -18,8 +20,10 @@ export default function sign() {
   const [totalPages, setTotalPages] = useState(0);
   const [mode, setMode] = useState("edit");
   const [isImage, setIsImage] = useState(false);
+  const [showEmailCard, setShowEmailCard] = useState(false);
 
   const [pdfBuffer, setPdfBuffer] = useState(new ArrayBuffer(0));
+  const [pdfBase64, setPdfBase64] = useState("")
 
   const getPdfBuffer = async () => {
     if (pdfBuffer.byteLength > 0) return pdfBuffer;
@@ -54,7 +58,7 @@ export default function sign() {
 
       page.drawImage(jpgImage, {
         x: paintPoint.x,
-        y: paintPoint.y,
+        y: paintPoint.y - 20,
         width: jpgDims.width,
         height: jpgDims.height,
         // rotate: degrees(30),
@@ -70,9 +74,12 @@ export default function sign() {
       });
     }
 
+    
+    const pdfBase64 = await pdfDoc.saveAsBase64()
     const pdfBytes = await pdfDoc.save();
 
     setPdfBuffer(pdfBytes);
+    setPdfBase64(pdfBase64)
     return pdfBytes;
   };
 
@@ -107,9 +114,21 @@ export default function sign() {
       ? setCurrentPage(currentPage - 1)
       : alert("Start of document");
   const handleNext = () =>
-    currentPage <= totalPages
+    currentPage <= totalPages - 1
       ? setCurrentPage(currentPage + 1)
-      : alert("End of document");
+      : setShowEmailCard(true);
+
+  const emailSendingHandler = async (owner, coSigner) => {
+    try {
+
+      const url = "http://localhost:8000/api/sendEmail";
+      await axios.post(url, { owner, coSigner, attachment: pdfBase64 });
+      alert("Emails sent successfully");
+    } catch (error) {
+      console.log(error);
+      alert("Emails sending failed, please retry");
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -118,11 +137,11 @@ export default function sign() {
           display: "flex",
         }}
       >
-        <button className={styles.prevButton} onClick={handlePrev}>
+        <button className={styles.button} onClick={handlePrev}>
           Prev
         </button>
         <button
-          className={styles.prevButton}
+          className={styles.button}
           onClick={() => {
             setMode("edit");
           }}
@@ -130,14 +149,14 @@ export default function sign() {
           Edit
         </button>
         <button
-          className={styles.nextButton}
+          className={styles.button}
           onClick={() => {
             setMode("sign");
           }}
         >
           Sign
         </button>
-        <button className={styles.nextButton} onClick={handleNext}>
+        <button className={styles.button} onClick={handleNext}>
           Next
         </button>
       </div>
@@ -153,18 +172,9 @@ export default function sign() {
           ref={pdfViewerRef}
         />
       </div>
-      {/* <button 
-        className={styles.signButton}
-        onClick={toggleSignBox}
-        >Sign</button>
-      {isSigning && ( 
-        <div className = {styles.sigCanvas}><SignaturePad penColor='black'
-        />
-        </div>
-      )} */}
 
       {showModal && mode == "edit" && (
-        <InputField
+        <EditField
           onClick={(e) => {
             setPainText(e);
             setPaintPoint(clickPoint);
@@ -184,142 +194,15 @@ export default function sign() {
           }}
         />
       )}
-    </div>
-  );
-}
 
-function InputField(props) {
-  const [value, setValue] = useState("");
-  return (
-    <div
-      style={{
-        position: "absolute",
-        left: "40vw",
-        top: "10vh",
-        padding: "50px",
-        backgroundColor: "black",
-        opacity: 0.8,
-        borderRadius: "7px",
-      }}
-    >
-      <input
-        type="text"
-        onChange={(e) => {
-          setValue(e.target.value);
-        }}
-        placeholder="Enter text to paint"
-      />
-      <button onClick={() => props.onClick(value)}>Okay</button>
-      <button>Sign</button>
-    </div>
-  );
-}
-
-function SigningCanvas(props) {
-  const ref = React.useRef();
-
-  const [ctx, setCtx] = useState({});
-  const [canvasData, setCanvasData] = useState({
-    canvasWidth: 400,
-    canvasHeight: 400,
-  });
-
-  const [shouldDraw, setShouldDraw] = useState(false);
-
-  useEffect(() => {
-    setCtx(ref.current.getContext("2d"));
-  }, [shouldDraw]);
-
-  const submitCanvas = () => {
-    let canvasImage = ref.current.toDataURL("image/png");
-    props.onClick(canvasImage);
-  };
-
-  const clearCanvas = () => {
-    // this.$refs.canvas
-    //   .getContext("2d")
-    //   .clearRect(0, 0, canvasData.canvasWidth, canvasData.canvasHeight);
-  };
-
-  const startDrawing = () => {
-    console.log("start draw called");
-    setShouldDraw(true);
-  };
-
-  const stopDrawing = (event) => {
-    console.log("called stop");
-    const e = event.nativeEvent;
-    setShouldDraw(false);
-    const ctx1 = ref.current.getContext("2d");
-    // ctx1.lineTo(null, null);
-    ctx1.closePath();
-    e.offsetX = null;
-    e.offsetY = null;
-  };
-
-  const getTouchPos = (canvasDom, touchEvent) => {
-    var rect = canvasDom.getBoundingClientRect();
-    return {
-      x: touchEvent.touches[0].clientX - rect.left,
-      y: touchEvent.touches[0].clientY - rect.top,
-    };
-  };
-
-  const drawOnCanvas = (event) => {
-    const e = event.nativeEvent;
-    const ctx1 = ref.current.getContext("2d");
-    if (!shouldDraw) return;
-    ctx1.lineWidth = 4;
-    ctx1.lineCap = "round";
-
-    ctx1.lineTo(e.offsetX, e.offsetY);
-
-    ctx1.stroke();
-    ctx1.beginPath();
-
-    ctx1.moveTo(e.offsetX, e.offsetY);
-  };
-
-  const drawOnCanvasMobile = (e) => {
-    // const ctx = window.xyz.$refs.canvas.getContext("2d");
-    // if (!this.shouldDraw) return;
-    // ctx.lineWidth = 4;
-    // ctx.lineCap = "round";
-    // e.offsetX = this.getTouchPos(window.xyz.$refs.canvas, e)["x"];
-    // e.offsetY = this.getTouchPos(window.xyz.$refs.canvas, e)["y"];
-    // ctx.lineTo(e.offsetX, e.offsetY);
-    // ctx.stroke();
-    // ctx.beginPath();
-    // ctx.moveTo(e.offsetX, e.offsetY);
-  };
-
-  return (
-    <div
-      style={{
-        position: "absolute",
-        // left: "40vw",
-        // top: "10vh",
-        padding: "50px",
-        backgroundColor: "white",
-        // opacity: 0.8,
-        borderRadius: "7px",
-      }}
-    >
-      <div className={styles.sigCanvas2}>
-        <canvas
-          id="my-canvas"
-          onTouchStart={() => {}}
-          onTouchMove={() => {}}
-          onTouchEnd={() => {}}
-          onMouseDown={startDrawing}
-          onMouseUp={stopDrawing}
-          onMouseMove={drawOnCanvas}
-          width={canvasData.canvasWidth}
-          height={canvasData.canvasHeight}
-          ref={ref}
-        ></canvas>
-      </div>
-      <button onClick={submitCanvas}>Sign</button>
+      {showEmailCard && (
+        <EmailCard
+          send={emailSendingHandler}
+          cancel={() => {
+            setShowEmailCard(false);
+          }}
+        />
+      )}
     </div>
   );
 }
