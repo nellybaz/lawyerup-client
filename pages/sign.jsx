@@ -28,7 +28,7 @@ export default function Sign() {
   const getPdfBuffer = async () => {
     if (pdfBuffer.byteLength > 0) return pdfBuffer;
 
-    const url = "http://localhost:8123/api/file";
+    const url = "https://lawyeredup-api.herokuapp.com/api/file";
 
     const resp = await axios.get(url, { responseType: "arraybuffer" });
 
@@ -121,7 +121,7 @@ export default function Sign() {
   const emailSendingHandler = async (owner, coSigner) => {
     try {
 
-      const url = "http://localhost:8123/api/sendEmail";
+      const url = "https://lawyeredup-api.herokuapp.com/api/sendEmail";
       await axios.post(url, { owner, coSigner, attachment: pdfBase64 });
       alert("Emails sent successfully");
     } catch (error) {
