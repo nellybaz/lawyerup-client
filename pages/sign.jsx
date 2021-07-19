@@ -10,6 +10,7 @@ import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 export default function Sign() {
   const pdfViewerRef = useRef(null);
+  const [windowHeight, setWindowHeight] = useState(1000);
   const [pdfData, setPdfData] = useState();
   const [pdfSize, setPdfSize] = useState({ width: 0, height: 0 });
   const [paintPoint, setPaintPoint] = useState({ x: 50, y: 600 });
@@ -84,6 +85,7 @@ export default function Sign() {
   };
 
   useEffect(() => {
+    setWindowHeight(window.innerHeight - 100)
     getPdf()
       .then((data) => {
         setPdfData(data);
@@ -170,6 +172,7 @@ export default function Sign() {
           pageNumber={currentPage}
           width={pdfSize.width}
           ref={pdfViewerRef}
+          height={windowHeight}
         />
       </div>
 
