@@ -58,7 +58,7 @@ export default function Home() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          All rights reserved. &copy; LayweredUp
+          Made with ❤️. All rights reserved. &copy; LayweredUp
         </a>
       </footer>
     </div>
