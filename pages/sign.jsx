@@ -8,7 +8,7 @@ import EmailCard from "../components/emailCard";
 
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
-export default function sign() {
+export default function Sign() {
   const pdfViewerRef = useRef(null);
   const [pdfData, setPdfData] = useState();
   const [pdfSize, setPdfSize] = useState({ width: 0, height: 0 });
