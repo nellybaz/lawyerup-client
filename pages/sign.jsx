@@ -1,265 +1,53 @@
+import React, { useRef, useEffect } from "react";
 import styles from "../styles/Home.module.css";
-import React, { useEffect, useRef, useState } from "react";
-import dynamic from "next/dynamic";
-import axios from "axios";
-import SigningCanvas from "../components/signingCanvas";
-import EditField from "../components/editField";
-import EmailCard from "../components/emailCard";
 
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+function PdfEditor(props) {
+  const viewerDiv = useRef(null);
 
-export default function Sign() {
-  const pdfViewerRef = React.useRef();
-  const pdfViewerDocRef = React.useRef();
-  const [windowHeight, setWindowHeight] = useState(1000);
-  const [pdfSize, setPdfSize] = useState({ width: 0, height: 0 });
-  const [paintPoint, setPaintPoint] = useState({ x: 50, y: 600 });
-  const [clickPoint, setClickPoint] = useState({ x: 50, y: 600 });
-  const [showModal, setShowModal] = useState(false);
-  const [paintText, setPainText] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [mode, setMode] = useState("edit");
-  const [isImage, setIsImage] = useState(false);
-  const [showEmailCard, setShowEmailCard] = useState(false);
+  useEffect(async () => {
+    const WebView = (await import("@pdftron/webviewer")).default;
+    WebView(
+      {
+        path: "lib",
+        initialDoc:
+          "https://res.cloudinary.com/nellybaz/image/upload/v1626699273/nda2.pdf",
+      },
+      viewerDiv.current
+    ).then((instance) => {
+      const { documentViewer, annotationManager } = instance.Core;
 
-  const [pdfBuffer, setPdfBuffer] = useState(new ArrayBuffer(0));
-  const [pdfBase64, setPdfBase64] = useState("");
+      documentViewer.addEventListener("documentLoaded", async () => {
+        const doc = documentViewer.getDocument();
+        const xfdfString = await annotationManager.exportAnnotations();
+        const options = { xfdfString };
+        const data = await doc.getFileData(options);
+        const arr = new Uint8Array(data);
+        // const blob = new Blob([arr], { type: "application/pdf" });
+        // upload blob to your server
+        // console.log({ arr, blob });
 
-  const getPdfBuffer = async () => {
-    if (pdfBuffer.byteLength > 0) return pdfBuffer;
+        var decoder = new TextDecoder('utf8');
+        var b64encoded = btoa(decoder.decode(arr));
+      });
 
-    const url = "https://lawyeredup-api.herokuapp.com/api/file";
+      instance.UI.setHeaderItems(header => {
+        header.push({
+          type: 'actionButton',
+          img: '<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve"><path style="fill:#4DBBEB;" d="M507.607,4.395c-4.242-4.245-10.61-5.551-16.177-3.32l-482,192.798 c-5.516,2.205-9.209,7.458-9.42,13.394c-0.211,5.936,3.101,11.438,8.444,14.029l190.067,92.182l92.182,190.068 c2.514,5.184,7.764,8.454,13.493,8.454c0.178,0,0.357-0.003,0.536-0.01c5.936-0.211,11.188-3.904,13.394-9.419L510.928,20.573 C513.156,15.002,511.85,8.638,507.607,4.395z"/><path style="fill:#2488FF;" d="M507.607,4.395L198.522,313.477l92.182,190.068c2.514,5.184,7.764,8.454,13.493,8.454 c0.178,0,0.357-0.003,0.536-0.01c5.936-0.211,11.188-3.904,13.394-9.419L510.928,20.573C513.156,15.002,511.85,8.638,507.607,4.395 L507.607,4.395z"/></svg>',
+          onClick: () => {
+            // save the annotations
+          }
+        });
+      });
 
-    const resp = await axios.get(url, { responseType: "arraybuffer" });
-
-    const fetchedPdfData = await resp.data;
-    setPdfBuffer(fetchedPdfData);
-    return fetchedPdfData;
-  };
-
-  const getPdf = async (data) => {
-    const fetchedPdfData = await getPdfBuffer();
-    const pdfDoc = await PDFDocument.load(fetchedPdfData);
-
-    const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
-
-    const page = pdfDoc.getPages()[currentPage - 1];
-
-    setTotalPages(pdfDoc.getPages().length);
-
-    const { width, height } = page.getSize();
-    setPdfSize({ width, height });
-
-    const fontSize = 13;
-    const padding = 70;
-
-    console.log({ width, height });
-    page.drawText("right", {
-      x: width - padding,
-      y: height - padding,
-      size: fontSize,
-      font: timesRomanFont,
-      color: rgb(0, 0, 0),
     });
-    page.drawText("left", {
-      x: padding,
-      y: height - padding,
-      size: fontSize,
-      font: timesRomanFont,
-      color: rgb(0, 0, 0),
-    });
-
-    if (data && data.x && data.y && data.text) {
-      if (isImage) {
-        const jpgImage = await pdfDoc.embedPng(paintText);
-        const jpgDims = jpgImage.scale(0.3);
-
-        page.drawImage(jpgImage, {
-          x: paintPoint.x,
-          y: paintPoint.y - 20,
-          width: jpgDims.width,
-          height: jpgDims.height,
-          // rotate: degrees(30),
-          // opacity: 0.75,
-        });
-      } else {
-        const xPadding = (window.innerWidth / window.innerHeight) * 10;
-        const yPadding = (window.innerWidth / window.innerHeight) * 12;
-        console.log({
-          windowWidth: window.innerWidth,
-          pageWidth: width,
-          widthDiff: window.innerWidth - width,
-          windowHeight: window.innerHeight,
-          pageHeight: height,
-          heightDiff: window.innerHeight - height,
-        });
-
-        page.drawText(data.text, {
-          x: data.x,
-          y: data.y,
-          // x: data.x - parseInt(xPadding),
-          // y: height - data.y + parseInt(yPadding),
-          size: fontSize,
-          font: timesRomanFont,
-          color: rgb(0, 0, 0),
-        });
-      }
-    }
-
-    const pdfBase64 = await pdfDoc.saveAsBase64();
-    const pdfBytes = await pdfDoc.save();
-
-    setPdfBuffer(pdfBytes);
-    setPdfBase64(pdfBase64);
-    return pdfBytes;
-  };
-
-  useEffect(() => {
-    console.log("use effect called");
-    setWindowHeight(window.innerHeight - 100);
-    getPdf(null)
-      .then((_) => {})
-      .catch(console.log);
   }, []);
 
-  const PdfViewer = dynamic(() => import("../components/pdfViewer"), {
-    ssr: false,
-  });
-
-  const mouseMoveHandler = (e) => {
-    const x = e.clientX;
-    const y = e.clientY;
-    setClickPoint({
-      x: x,
-      y: y,
-    });
-    setShowModal(true);
-  };
-
-  const handlePrev = () =>
-    currentPage > 1
-      ? setCurrentPage(currentPage - 1)
-      : alert("Start of document");
-  const handleNext = () =>
-    currentPage <= totalPages - 1
-      ? setCurrentPage(currentPage + 1)
-      : setShowEmailCard(true);
-
-  const emailSendingHandler = async (owner, coSigner) => {
-    try {
-      const url = "https://lawyeredup-api.herokuapp.com/api/sendEmail";
-      await axios.post(url, { owner, coSigner, attachment: pdfBase64 });
-      alert("Emails sent successfully");
-    } catch (error) {
-      console.log(error);
-      alert("Emails sending failed, please retry");
-    }
-  };
-
   return (
-    <div className={styles.container}>
-      <div
-        style={{
-          display: "flex",
-        }}
-      >
-        <button className={styles.button} onClick={handlePrev}>
-          Prev
-        </button>
-        <button
-          className={styles.button}
-          onClick={() => {
-            setMode("edit");
-          }}
-        >
-          Edit {clickPoint.x}, {clickPoint.y}
-        </button>
-        <button
-          className={styles.button}
-          onClick={() => {
-            setMode("sign");
-          }}
-        >
-          Sign
-        </button>
-        <button className={styles.button} onClick={handleNext}>
-          Next
-        </button>
-      </div>
-
-      <div
-        style={{ border: "1px solid grey", padding: "0" }}
-        // onClick={mouseMoveHandler}
-      >
-        <PdfViewer
-          url={pdfBuffer}
-          pageNumber={currentPage}
-          width={pdfSize.width}
-          pdfViewerRef={pdfViewerRef}
-          height={windowHeight}
-          docRef={pdfViewerDocRef}
-          loadSuccess={() => {
-            console.log("pdf viewer loaded");
-            if (pdfViewerRef && pdfViewerRef.current) {
-              pdfViewerRef.current.addEventListener(
-                "mousedown",
-                (e) => {
-                  console.log(e.clientX, e.clientY);
-                  mouseMoveHandler(e);
-                },
-                false
-              );
-            }
-          }}
-        />
-      </div>
-
-      {showModal && mode == "edit" && (
-        <EditField
-          onClick={(e) => {
-            const boundingClientRect =
-              pdfViewerRef.current.getBoundingClientRect();
-            console.log({ boundingClientRect });
-
-            // const x = clickPoint.x - boundingClientRect.left;
-            // const y = clickPoint.y - boundingClientRect.top;
-            // console.log(clickPoint.y,  boundingClientRect.top);
-            // console.log("x: " + x + " y: " + y);
-
-            getPdf({
-              text: e,
-              x: clickPoint.x,
-              y: clickPoint.y,
-            })
-              .then((_) => {
-                setShowModal(false);
-              })
-              .catch(console.log);
-          }}
-        />
-      )}
-
-      {showModal && mode == "sign" && (
-        <SigningCanvas
-          onClick={(e) => {
-            console.log(e);
-            setPainText(e);
-            setPaintPoint(clickPoint);
-            setShowModal(false);
-            setIsImage(true);
-          }}
-        />
-      )}
-
-      {showEmailCard && (
-        <EmailCard
-          send={emailSendingHandler}
-          cancel={() => {
-            setShowEmailCard(false);
-          }}
-        />
-      )}
+    <div className="container">
+      <div className={styles.webview} ref={viewerDiv}></div>
     </div>
   );
 }
+
+export default PdfEditor;
