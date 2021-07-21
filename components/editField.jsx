@@ -28,7 +28,7 @@ export default function EditField(props) {
       <button className={styles.button} onClick={() => props.onClick(value)}>
         Okay
       </button>
-      <button className={styles.button}>Sign</button>
+      {/* <button className={styles.button}>Sign</button> */}
     </div>
   );
 }

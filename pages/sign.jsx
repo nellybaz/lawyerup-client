@@ -9,9 +9,9 @@ import EmailCard from "../components/emailCard";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 export default function Sign() {
-  const pdfViewerRef = useRef(null);
+  const pdfViewerRef = React.useRef();
+  const pdfViewerDocRef = React.useRef();
   const [windowHeight, setWindowHeight] = useState(1000);
-  const [pdfData, setPdfData] = useState();
   const [pdfSize, setPdfSize] = useState({ width: 0, height: 0 });
   const [paintPoint, setPaintPoint] = useState({ x: 50, y: 600 });
   const [clickPoint, setClickPoint] = useState({ x: 50, y: 600 });
@@ -24,7 +24,7 @@ export default function Sign() {
   const [showEmailCard, setShowEmailCard] = useState(false);
 
   const [pdfBuffer, setPdfBuffer] = useState(new ArrayBuffer(0));
-  const [pdfBase64, setPdfBase64] = useState("")
+  const [pdfBase64, setPdfBase64] = useState("");
 
   const getPdfBuffer = async () => {
     if (pdfBuffer.byteLength > 0) return pdfBuffer;
@@ -38,7 +38,7 @@ export default function Sign() {
     return fetchedPdfData;
   };
 
-  const getPdf = async () => {
+  const getPdf = async (data) => {
     const fetchedPdfData = await getPdfBuffer();
     const pdfDoc = await PDFDocument.load(fetchedPdfData);
 
@@ -52,46 +52,76 @@ export default function Sign() {
     setPdfSize({ width, height });
 
     const fontSize = 13;
+    const padding = 70;
 
-    if (isImage) {
-      const jpgImage = await pdfDoc.embedPng(paintText);
-      const jpgDims = jpgImage.scale(0.3);
+    console.log({ width, height });
+    page.drawText("right", {
+      x: width - padding,
+      y: height - padding,
+      size: fontSize,
+      font: timesRomanFont,
+      color: rgb(0, 0, 0),
+    });
+    page.drawText("left", {
+      x: padding,
+      y: height - padding,
+      size: fontSize,
+      font: timesRomanFont,
+      color: rgb(0, 0, 0),
+    });
 
-      page.drawImage(jpgImage, {
-        x: paintPoint.x,
-        y: paintPoint.y - 20,
-        width: jpgDims.width,
-        height: jpgDims.height,
-        // rotate: degrees(30),
-        // opacity: 0.75,
-      });
-    } else {
-      page.drawText(paintText, {
-        x: paintPoint.x,
-        y: paintPoint.y,
-        size: fontSize,
-        font: timesRomanFont,
-        color: rgb(0, 0, 0),
-      });
+    if (data && data.x && data.y && data.text) {
+      if (isImage) {
+        const jpgImage = await pdfDoc.embedPng(paintText);
+        const jpgDims = jpgImage.scale(0.3);
+
+        page.drawImage(jpgImage, {
+          x: paintPoint.x,
+          y: paintPoint.y - 20,
+          width: jpgDims.width,
+          height: jpgDims.height,
+          // rotate: degrees(30),
+          // opacity: 0.75,
+        });
+      } else {
+        const xPadding = (window.innerWidth / window.innerHeight) * 10;
+        const yPadding = (window.innerWidth / window.innerHeight) * 12;
+        console.log({
+          windowWidth: window.innerWidth,
+          pageWidth: width,
+          widthDiff: window.innerWidth - width,
+          windowHeight: window.innerHeight,
+          pageHeight: height,
+          heightDiff: window.innerHeight - height,
+        });
+
+        page.drawText(data.text, {
+          x: data.x,
+          y: data.y,
+          // x: data.x - parseInt(xPadding),
+          // y: height - data.y + parseInt(yPadding),
+          size: fontSize,
+          font: timesRomanFont,
+          color: rgb(0, 0, 0),
+        });
+      }
     }
 
-    
-    const pdfBase64 = await pdfDoc.saveAsBase64()
+    const pdfBase64 = await pdfDoc.saveAsBase64();
     const pdfBytes = await pdfDoc.save();
 
     setPdfBuffer(pdfBytes);
-    setPdfBase64(pdfBase64)
+    setPdfBase64(pdfBase64);
     return pdfBytes;
   };
 
   useEffect(() => {
-    setWindowHeight(window.innerHeight - 100)
-    getPdf()
-      .then((data) => {
-        setPdfData(data);
-      })
+    console.log("use effect called");
+    setWindowHeight(window.innerHeight - 100);
+    getPdf(null)
+      .then((_) => {})
       .catch(console.log);
-  }, [paintText]);
+  }, []);
 
   const PdfViewer = dynamic(() => import("../components/pdfViewer"), {
     ssr: false,
@@ -100,13 +130,9 @@ export default function Sign() {
   const mouseMoveHandler = (e) => {
     const x = e.clientX;
     const y = e.clientY;
-    const widthSpace = (window.innerWidth - pdfSize.width) / 2;
-    const heightSpace = (window.innerHeight - pdfSize.height) / 2;
-
-    const padding = -35;
     setClickPoint({
-      x: x - widthSpace,
-      y: pdfSize.height - padding - (y - heightSpace),
+      x: x,
+      y: y,
     });
     setShowModal(true);
   };
@@ -122,7 +148,6 @@ export default function Sign() {
 
   const emailSendingHandler = async (owner, coSigner) => {
     try {
-
       const url = "https://lawyeredup-api.herokuapp.com/api/sendEmail";
       await axios.post(url, { owner, coSigner, attachment: pdfBase64 });
       alert("Emails sent successfully");
@@ -148,7 +173,7 @@ export default function Sign() {
             setMode("edit");
           }}
         >
-          Edit
+          Edit {clickPoint.x}, {clickPoint.y}
         </button>
         <button
           className={styles.button}
@@ -165,23 +190,52 @@ export default function Sign() {
 
       <div
         style={{ border: "1px solid grey", padding: "0" }}
-        onClick={mouseMoveHandler}
+        // onClick={mouseMoveHandler}
       >
         <PdfViewer
-          url={pdfData}
+          url={pdfBuffer}
           pageNumber={currentPage}
           width={pdfSize.width}
-          ref={pdfViewerRef}
+          pdfViewerRef={pdfViewerRef}
           height={windowHeight}
+          docRef={pdfViewerDocRef}
+          loadSuccess={() => {
+            console.log("pdf viewer loaded");
+            if (pdfViewerRef && pdfViewerRef.current) {
+              pdfViewerRef.current.addEventListener(
+                "mousedown",
+                (e) => {
+                  console.log(e.clientX, e.clientY);
+                  mouseMoveHandler(e);
+                },
+                false
+              );
+            }
+          }}
         />
       </div>
 
       {showModal && mode == "edit" && (
         <EditField
           onClick={(e) => {
-            setPainText(e);
-            setPaintPoint(clickPoint);
-            setShowModal(false);
+            const boundingClientRect =
+              pdfViewerRef.current.getBoundingClientRect();
+            console.log({ boundingClientRect });
+
+            // const x = clickPoint.x - boundingClientRect.left;
+            // const y = clickPoint.y - boundingClientRect.top;
+            // console.log(clickPoint.y,  boundingClientRect.top);
+            // console.log("x: " + x + " y: " + y);
+
+            getPdf({
+              text: e,
+              x: clickPoint.x,
+              y: clickPoint.y,
+            })
+              .then((_) => {
+                setShowModal(false);
+              })
+              .catch(console.log);
           }}
         />
       )}
