@@ -1,8 +1,25 @@
-import Head from 'next/head'
-import Image from 'next/image'
-import styles from '../styles/Home.module.css'
+import Head from "next/head";
+import styles from "../styles/Home.module.css";
+import { useState } from "react";
+import Modal from "react-modal";
+import { useRouter } from "next/router";
+
+const customStyles = {
+  content: {
+    top: "50%",
+    left: "50%",
+    right: "auto",
+    bottom: "auto",
+    marginRight: "-50%",
+    transform: "translate(-50%, -50%)",
+  },
+};
 
 export default function Home() {
+  const [emails, setEmails] = useState({ owner: "", coSigner: "" });
+  const [showModal, setShowModal] = useState(false);
+  const router = useRouter();
+
   return (
     <div className={styles.container}>
       <Head>
@@ -17,14 +34,23 @@ export default function Home() {
         </h1>
 
         <p className={styles.description}>
-        To get started with your NDA, click below to{' '}
+          To get started with your NDA, click below to{" "}
           <code className={styles.code}>Edit</code>
         </p>
 
         <div className={styles.grid}>
-          <a href="sign" className={styles.card}>
+          <a
+            onClick={() => {
+              setShowModal(true);
+            }}
+            className={styles.card}
+          >
             <h2>Freelance NDA &rarr;</h2>
-            <p>A contract by which one or more parties agree not to disclose confidential information that they have shared with each other as a necessary part of doing business together.</p>
+            <p>
+              A contract by which one or more parties agree not to disclose
+              confidential information that they have shared with each other as
+              a necessary part of doing business together.
+            </p>
           </a>
 
           {/* <a href="#" className={styles.card}>
@@ -61,6 +87,62 @@ export default function Home() {
           Made with ❤️. All rights reserved. &copy; LayweredUp
         </a>
       </footer>
+
+      <Modal
+        isOpen={showModal}
+        onAfterOpen={() => {}}
+        onRequestClose={() => {}}
+        style={customStyles}
+        contentLabel="Example Modal"
+      >
+        <h2>Enter emails to receive NDA</h2>
+        <input
+          className={styles.inputField}
+          placeholder="Enter your email"
+          onChange={(e) => {
+            setEmails({ ...emails, owner: e.target.value });
+          }}
+        />
+        <br />
+        <br />
+        <input
+          className={styles.inputField}
+          placeholder="Enter co-signer's email"
+          onChange={(e) => {
+            setEmails({ ...emails, coSigner: e.target.value });
+          }}
+        />
+        <br />
+        <br />
+        <button
+          className={styles.button}
+          onClick={() => {
+            if (!emails.owner || !emails.coSigner) {
+              alert("Emails are required!");
+            } else if (emails.owner === emails.coSigner) {
+              alert("Emails should not be the same!");
+            } else {
+              router.push({
+                pathname: "/sign",
+                query: { ...emails },
+              });
+            }
+          }}
+        >
+          Okay! Proceed
+        </button>
+
+        <br />
+        <br />
+        <button
+          className={styles.button}
+          onClick={() => {
+            setShowModal(false);
+          }}
+        >
+          Cancel
+        </button>
+      </Modal>
     </div>
-  )
+  );
 }

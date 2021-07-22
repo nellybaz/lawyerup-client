@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@pdftron/webviewer": "^8.0.0",
+    "@types/react-modal": "^3.12.1",
     "@types/react-pdf": "^5.0.4",
     "axios": "^0.21.1",
     "js-base64": "^3.6.1",

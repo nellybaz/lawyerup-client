@@ -1,7 +1,8 @@
 import React, { useRef, useEffect } from "react";
 import styles from "../styles/Home.module.css";
-import axios from 'axios';
-import { Base64 } from 'js-base64';
+import axios from "axios";
+import { Base64 } from "js-base64";
+import { withRouter } from "next/router";
 
 function PdfEditor(props) {
   const viewerDiv = useRef(null);
@@ -9,9 +10,14 @@ function PdfEditor(props) {
   const sendEmail = async (pdfBase64) => {
     try {
       const url = "https://lawyeredup-api.herokuapp.com/api/sendEmail";
+
+      const { owner, coSigner } = props.router.query;
+      
       await axios.post(url, {
-        owner: "nelson.bassey111@gmail.com",
-        coSigner: "nellybaz10@gmail.com",
+        // owner: "nelson.bassey111@gmail.com",
+        // coSigner: "nellybaz10@gmail.com",
+        owner,
+        coSigner,
         attachment: pdfBase64,
       });
     } catch (error) {
@@ -32,7 +38,7 @@ function PdfEditor(props) {
       const { documentViewer, annotationManager } = instance.Core;
 
       documentViewer.addEventListener("documentLoaded", async () => {
-        console.log('Downloaded');
+        console.log("Downloaded");
       });
 
       instance.UI.setHeaderItems((header) => {
@@ -51,7 +57,7 @@ function PdfEditor(props) {
 
             const b64encoded = Base64.fromUint8Array(arr);
             await sendEmail(b64encoded);
-            alert('Thanks for using LawyeredUp. Email sent 😊')
+            alert("Thanks for using LawyeredUp. Email sent 😊");
           },
         });
       });
@@ -65,4 +71,4 @@ function PdfEditor(props) {
   );
 }
 
-export default PdfEditor;
+export default withRouter(PdfEditor);
