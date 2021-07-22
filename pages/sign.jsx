@@ -1,211 +1,68 @@
+import React, { useRef, useEffect } from "react";
 import styles from "../styles/Home.module.css";
-import React, { useEffect, useRef, useState } from "react";
-import dynamic from "next/dynamic";
-import axios from "axios";
-import SigningCanvas from "../components/signingCanvas";
-import EditField from "../components/editField";
-import EmailCard from "../components/emailCard";
+import axios from 'axios';
+import { Base64 } from 'js-base64';
 
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+function PdfEditor(props) {
+  const viewerDiv = useRef(null);
 
-export default function Sign() {
-  const pdfViewerRef = useRef(null);
-  const [windowHeight, setWindowHeight] = useState(1000);
-  const [pdfData, setPdfData] = useState();
-  const [pdfSize, setPdfSize] = useState({ width: 0, height: 0 });
-  const [paintPoint, setPaintPoint] = useState({ x: 50, y: 600 });
-  const [clickPoint, setClickPoint] = useState({ x: 50, y: 600 });
-  const [showModal, setShowModal] = useState(false);
-  const [paintText, setPainText] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [mode, setMode] = useState("edit");
-  const [isImage, setIsImage] = useState(false);
-  const [showEmailCard, setShowEmailCard] = useState(false);
-
-  const [pdfBuffer, setPdfBuffer] = useState(new ArrayBuffer(0));
-  const [pdfBase64, setPdfBase64] = useState("")
-
-  const getPdfBuffer = async () => {
-    if (pdfBuffer.byteLength > 0) return pdfBuffer;
-
-    const url = "https://lawyeredup-api.herokuapp.com/api/file";
-
-    const resp = await axios.get(url, { responseType: "arraybuffer" });
-
-    const fetchedPdfData = await resp.data;
-    setPdfBuffer(fetchedPdfData);
-    return fetchedPdfData;
-  };
-
-  const getPdf = async () => {
-    const fetchedPdfData = await getPdfBuffer();
-    const pdfDoc = await PDFDocument.load(fetchedPdfData);
-
-    const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
-
-    const page = pdfDoc.getPages()[currentPage - 1];
-
-    setTotalPages(pdfDoc.getPages().length);
-
-    const { width, height } = page.getSize();
-    setPdfSize({ width, height });
-
-    const fontSize = 13;
-
-    if (isImage) {
-      const jpgImage = await pdfDoc.embedPng(paintText);
-      const jpgDims = jpgImage.scale(0.3);
-
-      page.drawImage(jpgImage, {
-        x: paintPoint.x,
-        y: paintPoint.y - 20,
-        width: jpgDims.width,
-        height: jpgDims.height,
-        // rotate: degrees(30),
-        // opacity: 0.75,
-      });
-    } else {
-      page.drawText(paintText, {
-        x: paintPoint.x,
-        y: paintPoint.y,
-        size: fontSize,
-        font: timesRomanFont,
-        color: rgb(0, 0, 0),
-      });
-    }
-
-    
-    const pdfBase64 = await pdfDoc.saveAsBase64()
-    const pdfBytes = await pdfDoc.save();
-
-    setPdfBuffer(pdfBytes);
-    setPdfBase64(pdfBase64)
-    return pdfBytes;
-  };
-
-  useEffect(() => {
-    setWindowHeight(window.innerHeight - 100)
-    getPdf()
-      .then((data) => {
-        setPdfData(data);
-      })
-      .catch(console.log);
-  }, [paintText]);
-
-  const PdfViewer = dynamic(() => import("../components/pdfViewer"), {
-    ssr: false,
-  });
-
-  const mouseMoveHandler = (e) => {
-    const x = e.clientX;
-    const y = e.clientY;
-    const widthSpace = (window.innerWidth - pdfSize.width) / 2;
-    const heightSpace = (window.innerHeight - pdfSize.height) / 2;
-
-    const padding = -35;
-    setClickPoint({
-      x: x - widthSpace,
-      y: pdfSize.height - padding - (y - heightSpace),
-    });
-    setShowModal(true);
-  };
-
-  const handlePrev = () =>
-    currentPage > 1
-      ? setCurrentPage(currentPage - 1)
-      : alert("Start of document");
-  const handleNext = () =>
-    currentPage <= totalPages - 1
-      ? setCurrentPage(currentPage + 1)
-      : setShowEmailCard(true);
-
-  const emailSendingHandler = async (owner, coSigner) => {
+  const sendEmail = async (pdfBase64) => {
     try {
-
       const url = "https://lawyeredup-api.herokuapp.com/api/sendEmail";
-      await axios.post(url, { owner, coSigner, attachment: pdfBase64 });
-      alert("Emails sent successfully");
+      await axios.post(url, {
+        owner: "nelson.bassey111@gmail.com",
+        coSigner: "nellybaz10@gmail.com",
+        attachment: pdfBase64,
+      });
     } catch (error) {
       console.log(error);
       alert("Emails sending failed, please retry");
     }
   };
+  useEffect(async () => {
+    const WebView = (await import("@pdftron/webviewer")).default;
+    WebView(
+      {
+        path: "lib",
+        initialDoc:
+          "https://res.cloudinary.com/nellybaz/image/upload/v1626699273/nda2.pdf",
+      },
+      viewerDiv.current
+    ).then((instance) => {
+      const { documentViewer, annotationManager } = instance.Core;
+
+      documentViewer.addEventListener("documentLoaded", async () => {
+        console.log('Downloaded');
+      });
+
+      instance.UI.setHeaderItems((header) => {
+        header.push({
+          type: "actionButton",
+          img: '<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve"><path style="fill:#4DBBEB;" d="M507.607,4.395c-4.242-4.245-10.61-5.551-16.177-3.32l-482,192.798 c-5.516,2.205-9.209,7.458-9.42,13.394c-0.211,5.936,3.101,11.438,8.444,14.029l190.067,92.182l92.182,190.068 c2.514,5.184,7.764,8.454,13.493,8.454c0.178,0,0.357-0.003,0.536-0.01c5.936-0.211,11.188-3.904,13.394-9.419L510.928,20.573 C513.156,15.002,511.85,8.638,507.607,4.395z"/><path style="fill:#2488FF;" d="M507.607,4.395L198.522,313.477l92.182,190.068c2.514,5.184,7.764,8.454,13.493,8.454 c0.178,0,0.357-0.003,0.536-0.01c5.936-0.211,11.188-3.904,13.394-9.419L510.928,20.573C513.156,15.002,511.85,8.638,507.607,4.395 L507.607,4.395z"/></svg>',
+          onClick: async () => {
+            const doc = documentViewer.getDocument();
+            const xfdfString = await annotationManager.exportAnnotations();
+            const options = { xfdfString };
+            const data = await doc.getFileData(options);
+            const arr = new Uint8Array(data);
+            // const blob = new Blob([arr], { type: "application/pdf" });
+            // upload blob to your server
+            // console.log({ arr, blob });
+
+            const b64encoded = Base64.fromUint8Array(arr);
+            await sendEmail(b64encoded);
+            alert('Thanks for using LawyeredUp. Email sent 😊')
+          },
+        });
+      });
+    });
+  }, []);
 
   return (
-    <div className={styles.container}>
-      <div
-        style={{
-          display: "flex",
-        }}
-      >
-        <button className={styles.button} onClick={handlePrev}>
-          Prev
-        </button>
-        <button
-          className={styles.button}
-          onClick={() => {
-            setMode("edit");
-          }}
-        >
-          Edit
-        </button>
-        <button
-          className={styles.button}
-          onClick={() => {
-            setMode("sign");
-          }}
-        >
-          Sign
-        </button>
-        <button className={styles.button} onClick={handleNext}>
-          Next
-        </button>
-      </div>
-
-      <div
-        style={{ border: "1px solid grey", padding: "0" }}
-        onClick={mouseMoveHandler}
-      >
-        <PdfViewer
-          url={pdfData}
-          pageNumber={currentPage}
-          width={pdfSize.width}
-          ref={pdfViewerRef}
-          height={windowHeight}
-        />
-      </div>
-
-      {showModal && mode == "edit" && (
-        <EditField
-          onClick={(e) => {
-            setPainText(e);
-            setPaintPoint(clickPoint);
-            setShowModal(false);
-          }}
-        />
-      )}
-
-      {showModal && mode == "sign" && (
-        <SigningCanvas
-          onClick={(e) => {
-            console.log(e);
-            setPainText(e);
-            setPaintPoint(clickPoint);
-            setShowModal(false);
-            setIsImage(true);
-          }}
-        />
-      )}
-
-      {showEmailCard && (
-        <EmailCard
-          send={emailSendingHandler}
-          cancel={() => {
-            setShowEmailCard(false);
-          }}
-        />
-      )}
+    <div className="container">
+      <div className={styles.webview} ref={viewerDiv}></div>
     </div>
   );
 }
+
+export default PdfEditor;
