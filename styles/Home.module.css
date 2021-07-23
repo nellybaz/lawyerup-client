@@ -38,7 +38,7 @@
 }
 
 .title a {
-  color: #0070f3;
+  color: #AEAEAE;
   text-decoration: none;
 }
 
@@ -97,8 +97,9 @@
 .card:hover,
 .card:focus,
 .card:active {
-  color: #0070f3;
-  border-color: #0070f3;
+  color: #AEAEAE;
+  border-color: #AEAEAE;
+  cursor: pointer;
 }
 
 .card h2 {
@@ -138,8 +139,8 @@
 }
 
 .prevButton:hover {
-  border: 2px solid #0070f3;
-  color: #0070f3;
+  border: 2px solid #AEAEAE;
+  color: #AEAEAE;
 }
 
 .inputField {
@@ -154,7 +155,7 @@
   padding: 10px 30px;
   white-space: nowrap;
   border-radius: 5px;
-  border: 2px solid #0070f3;
+  border: 2px solid #AEAEAE;
   cursor: pointer;
   background-color: #fff;
   font-size: 16px;
@@ -162,8 +163,8 @@
 }
 
 .button:hover {
-  /* border: 2px solid #0070f3; */
-  background-color: #0070f3;
+  /* border: 2px solid #AEAEAE; */
+  background-color: #AEAEAE;
   color: #fff;
 }
 
@@ -180,8 +181,8 @@
 }
 
 .signButton:hover {
-  border: 2px solid #0070f3;
-  color: #0070f3;
+  border: 2px solid #AEAEAE;
+  color: #AEAEAE;
 }
 
 .sigCanvas {
