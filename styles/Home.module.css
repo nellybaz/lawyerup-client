@@ -38,7 +38,7 @@
 }
 
 .title a {
-  color: #AEAEAE;
+  color: #aeaeae;
   text-decoration: none;
 }
 
@@ -97,8 +97,8 @@
 .card:hover,
 .card:focus,
 .card:active {
-  color: #AEAEAE;
-  border-color: #AEAEAE;
+  color: #aeaeae;
+  border-color: #aeaeae;
   cursor: pointer;
 }
 
@@ -123,6 +123,16 @@
     width: 100%;
     flex-direction: column;
   }
+  .title {
+    font-size: 3rem;
+  }
+
+  .card {
+    width: 80%;
+  }
+  .card p {
+    font-size: 1rem;
+  }
 }
 
 .prevButton {
@@ -139,8 +149,8 @@
 }
 
 .prevButton:hover {
-  border: 2px solid #AEAEAE;
-  color: #AEAEAE;
+  border: 2px solid #aeaeae;
+  color: #aeaeae;
 }
 
 .inputField {
@@ -155,7 +165,7 @@
   padding: 10px 30px;
   white-space: nowrap;
   border-radius: 5px;
-  border: 2px solid #AEAEAE;
+  border: 2px solid #aeaeae;
   cursor: pointer;
   background-color: #fff;
   font-size: 16px;
@@ -164,7 +174,7 @@
 
 .button:hover {
   /* border: 2px solid #AEAEAE; */
-  background-color: #AEAEAE;
+  background-color: #aeaeae;
   color: #fff;
 }
 
@@ -181,8 +191,8 @@
 }
 
 .signButton:hover {
-  border: 2px solid #AEAEAE;
-  color: #AEAEAE;
+  border: 2px solid #aeaeae;
+  color: #aeaeae;
 }
 
 .sigCanvas {
